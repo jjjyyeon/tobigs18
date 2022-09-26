@@ -1,0 +1,49 @@
+- BERT4Rec: Sequential Recommendation with Bidirectional
+Encoder Representations from Transformer
+    
+    이때까지의 딥러닝을 활용한 추천 시스템은 RNN 계열을 활용해 unidirectional 하게 유저 상호작용을 히든 벡터로 인코딩했다. unidirectional 모델링은 다음과 같은 문제점이 있다.
+    
+    - 표현력 한계
+    - 순서가 무의미 한 경우도 순서를 세우는 문제
+    
+    이 논문에서는 이러한 문제를 해결하기 위해 bidirectional self-attention을 활용한 Bert4Rec을 제안한다.
+    
+    ### Sequential Recommendation System
+    
+    먼저 시퀀셜 추천시스템은 유저의 과거 행동 패턴들을 학습하여 이후에 유저가 구매할 아이템을 추천하는 모델. 
+    시퀀셜 추천시스템의 연구 동향을 살펴보면 이전부터 NLP 와 관련이 많다. 
+    이러한 경향은 입력된 문장(단어)들을 바탕으로 다음에 올 새로운 문장(단어)을 예측하는 NLP 태스크가 시퀀셜 추천시스템하고 비슷하게 나타나기 때문. 
+    
+    ### Introduction
+    
+    이전에 좋은 성능을 보였던 시퀀셜 추천시스템(GRU4Rec, SASRec)의 경우 유저의 이전 행동 패턴만을 고려한 단방향 추천 모델들이 주로 사용다. 
+    하지만 이러한 단방향 추천 모델의 경우 유저가 과거에 구매했던 아이템의 정보만으로 모델을 학습하기 때문에 성능에 제한이 있을 수 있다. 
+    ex)유저가 닌텐도 스위치를 구입한 후에 닌텐도 스위치의 액세서리인 Joy-Con controllers를 구매할 수 있지만, 일반적인 상황에선 Joy-Con controllers를 구입하지 않을 수 있다. 이처럼 유저의 행동 패턴을 단방향으로만 학습하는 것은 실용적이지 않다고 지적하며 양방향 학습 모델인 BERT4Rec을 제안.
+    
+    ### BERT4Rec Model
+    
+    BERT4Rec 모델은  Embedding Layer, Transformer Layer, Output Layer로 구성되어 있다. 
+    모델을 양방향으로 학습하기 위해 BERT의 학습 방법처럼 유저의 행동 시퀀스에 대해 [Mask] 토큰을 사용하여 앞 뒤 정보로부터 [Mask]의  
+    정보를 파악할 수 있도록 하였다(Cloze task).  기존의 단뱡향 모델은 nn크기 만큼의 시퀀스 길이가 있다고 가정할 때, 
+    모델 학습 시 시퀀스마다 마지막 아이템을 맞추는 방식으로 nn개만큼 학습 샘플을 구할 수 있다. 
+    반면  BERT4Rec 모델은 랜덤하게 마스킹을 처리하는 kk개 역시 학습 샘플로 설정하여 기존 모델보다 많은 (nk)(nk) 개의 샘플을 학습에 사용할 수 있다.
+    이는 모델이 더욱 좋은 추천 성능을 나타내는 역할.
+    
+    BERT4Rec의 학습 과정은, 모델의 입력에 유저의 시퀀스 중 p의 확률 만큼 [Mask]를 수행하여 들어가게 되며, 
+    출력으로는 [Mask]된 아이템의 확률값이 나오게 된다. 이때 Mask의 비율 p의 경우 데이터셋마다 다르지만, 너무 큰 값(p>0.6)으로 설정할 경우 
+    오히려 성능은 악화됨을 실험을 통해 보인다. 
+    모델의 Loss의 경우 Negative log-likelihood를 사용하여 [Mask]가 반영된 유저의 행동 시퀀스가 주어졌을 때 [Mask] 아이템과
+    실제 [Mask]의 아이템을 비교하여 낮은 확률을 가질수록 weight를 더 많이 업데이트하는 방식으로 학습이 진행.
+    
+    **Experiments**
+    
+    전체적인 모델의 성능 비교 결과를 보면 BERT4Rec이 모든 데이터셋에서 좋은 성능을 보이고 있다. 
+    또한 바로 직전에 등장했던 SASRec 모델의 경우에도 제안 모델보다는 낮은 성능을 보이지만 이전의 Sequential 추천 모델에 비해 좋은 성능을 보이고 있다.
+    단방향으로 모델을 학습하는 것보다 양방향으로 유저의 행동 패턴을 학습하는 것이 더 좋은 추천 성능을 나타내고 있음을 알 수 있다. 
+    
+    ### Conclusion
+    
+    이 논문에서, 기존 단방향 추천모델의 한계를 극복하기 위해 유저의 행동 시퀀스에 [Mask]를 반영한 양방향 학습모델인 BERT4Rec 모델을 제안.
+    NLP 분야에서 BERT는 문장들의 representation을 학습하기 위해 pre-training의 목적으로 주로 사용되며 next sentence loss, segment embeddings도 같이 사용되는 특징이 있다.
+    하지만 BERT4Rec은 유저의 행동 패턴만을 바탕으로 시퀀셜 추천을 위한 end-to-end 방식의 추천 모델로 차별점이 있다. 
+    BERT4Rec은 여전히 오랜 시간 Sequential recommendation system에서 좋은 성능을 보여주고 있다.
